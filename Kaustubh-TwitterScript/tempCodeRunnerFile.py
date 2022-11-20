@@ -1,0 +1,1 @@
+if 'urls' in tweet['entities']:
