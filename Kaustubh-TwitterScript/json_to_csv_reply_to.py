@@ -11,7 +11,7 @@ json_response = json.load(json_file)
 
 
 def create_csv_file():
-    csvFile = open("data.csv", "a", newline="", encoding='utf-8')
+    csvFile = open("test_data.csv", "a", newline="", encoding='utf-8')
     csvWriter = csv.writer(csvFile)
 
     #Create headers for the data you want to save, in this example, we only want save these columns in our dataset
@@ -49,7 +49,7 @@ def append_to_csv(json_response):
     #A counter variable
     counter = 1
     count = 0
-    fileName = 'data.csv'
+    fileName = 'test_data.csv'
 
     #Open OR create the target CSV file
     csvFile = open(fileName, "a", newline="", encoding='utf-8')
@@ -65,7 +65,7 @@ def append_to_csv(json_response):
             # We will create a variable for each since some of the keys might not exist for some tweets
             # So we will account for that
 
-        # Tweet fields
+            # Tweet fields
             # 1. Author ID
             author_id = tweet['author_id']
 
@@ -81,11 +81,13 @@ def append_to_csv(json_response):
 
             #referenced_tweets
             referenced_tweets = ""
+            type = []
             if ('referenced_tweets' in tweet):
                 for i in tweet['referenced_tweets']:
                     oi = i['type']
                     po = i['id']
-                    referenced_tweets = [oi, po] 
+                    referenced_tweets = [oi, po]
+                    type.append(oi) 
             else:
                 referenced_tweets = ""
 
@@ -187,43 +189,41 @@ def append_to_csv(json_response):
 
                     context_annotations.append(po)
 
-            # Assemble all data in a list
-            res = [
-                counter,
-                id,
-                author_id , 
-                conversation_id ,
-                created_at ,
-                geo,
-                lang,
-                mentions,
-                url, 
-                annotations,
-                cashtag,
-                hashtag,
-                in_reply_to_user_id,
-                retweet_count,
-                reply_count,
-                like_count,
-                quote_count,
-                attachments_media_keys,
-                attachments_poll_ids,
-                possibly_sensitive,
-                referenced_tweets,
-                reply_settings,
-                source,
-                text,
-                context_annotations
-            ]
+            for i in type:
+                if (i == "replied_to"):
+                    # Assemble all data in a list
+                    res = [
+                        counter,
+                        id,
+                        author_id , 
+                        conversation_id ,
+                        created_at ,
+                        geo,
+                        lang,
+                        mentions,
+                        url, 
+                        annotations,
+                        cashtag,
+                        hashtag,
+                        in_reply_to_user_id,
+                        retweet_count,
+                        reply_count,
+                        like_count,
+                        quote_count,
+                        attachments_media_keys,
+                        attachments_poll_ids,
+                        possibly_sensitive,
+                        referenced_tweets,
+                        reply_settings,
+                        source,
+                        text,
+                        context_annotations
+                    ]
+                    
+                    # Append the result to the CSV file
+                    csvWriter.writerow(res)
+                    counter += 1
             
-            # Append the result to the CSV file
-            csvWriter.writerow(res)
-            counter += 1
-
-            if (counter == 5):
-                break
-        
-
         count += 1
         # When done, close the CSV file
     csvFile.close()
@@ -231,7 +231,7 @@ def append_to_csv(json_response):
     print("# of Tweets added from this response: ", counter-1) 
 
 
-create_csv_file()
+#create_csv_file()
 
 append_to_csv(json_response = json_response)
 
