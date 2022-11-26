@@ -3,6 +3,7 @@ import csv
 import datetime
 import dateutil.parser
 import unicodedata
+import os
 
 
 json_file = open('Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json')
@@ -231,7 +232,8 @@ def append_to_csv(json_response):
     print("# of Tweets added from this response: ", counter-1) 
 
 
-#create_csv_file()
+if not(os.path.exists('test_data.csv')):
+    create_csv_file()
 
 append_to_csv(json_response = json_response)
 
