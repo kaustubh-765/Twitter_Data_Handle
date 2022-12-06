@@ -58,10 +58,10 @@ def append_to_csv(json_response):
 
     #Loop through each tweet
     
-    while count<6:
+    for respon in json_response['batches']:
 
         
-        for tweet in json_response['batches'][count]['data']:
+        for tweet in respon['data']:
             
             # We will create a variable for each since some of the keys might not exist for some tweets
             # So we will account for that
@@ -219,11 +219,7 @@ def append_to_csv(json_response):
             
             # Append the result to the CSV file
             csvWriter.writerow(res)
-            counter += 1
-
-            if (counter == 5):
-                break
-        
+            counter += 1        
 
         count += 1
         # When done, close the CSV file
