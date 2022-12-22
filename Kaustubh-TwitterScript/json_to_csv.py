@@ -6,7 +6,7 @@ import unicodedata
 import os
 
 
-json_file = open('Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json')
+json_file = open('Original_tweets_in_json.json')
 
 json_response = json.load(json_file)
 

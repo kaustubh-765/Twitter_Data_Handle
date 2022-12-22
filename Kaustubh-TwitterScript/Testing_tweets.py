@@ -5,9 +5,9 @@ import time
 # Put bearer token here
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAJF6IQEAAAAARkYD8uKFUDZT0R%2BWzdkYNfc9bFw%3DWU7slkHso0Kn6U7vivUaK3aGrHnHm19blQ8vCoXabA2vFV34DU"
 
-#search_url = "https://api.twitter.com/2/tweets/search/all"
+search_url = "https://api.twitter.com/2/tweets/search/all"
 
-search_url =  'https://api.twitter.com/2/tweets?ids=1225917697675886593&tweet.fields=author_id,conversation_id,created_at,in_reply_to_user_id,referenced_tweets&expansions=author_id,in_reply_to_user_id,referenced_tweets.id&user.fields=name,username'
+#search_url =  'https://api.twitter.com/2/tweets?ids=1225917697675886593&tweet.fields=author_id,conversation_id,created_at,in_reply_to_user_id,referenced_tweets&expansions=author_id,in_reply_to_user_id,referenced_tweets.id&user.fields=name,username'
 
 #  1488623432271024130
 
@@ -27,16 +27,29 @@ user_fields = 'created_at,description,entities,id,location,name,pinned_tweet_id,
 # set start time YYYY-MM-DDTHH:mm:ssZ
 # TODO: max_results = 500?
 
-# query_string_conversation_id = 'conversation_id:1334987486343299072'
+query_string_conversation_id = 'conversation_id:1548371366457487365'
 # 'has:geo' for only geo tagged tweets, 'lang:', 'is:quote'
 
 query_string_keywords_and_hashtags = '#taliban OR #afghanistan OR #Afghanistan OR #Taliban'
 
+testing_cond = 'conversation_id:1279940000004973111'
+
+#in_reply_to_tweet_id:1334987486343299072
+
 #query_string_example = 'PCOS OR #PCOS'
 
-#query_params = {'query': query_string_keywords_and_hashtags, 'start_time': '2022-02-01T00:00:00Z', 'end_time': '2022-02-01T23:59:59Z', 'expansions': expansions, 'media.fields': media_fields, 'place.fields': place_fields, 'poll.fields': poll_fields, 'tweet.fields': tweet_fields, 'max_results': 100, 'user.fields': user_fields}
+#query_params = {'query': '', 'start_time': '2022-02-01T00:00:00Z', 'end_time': '2022-02-01T23:59:59Z', 'expansions': expansions, 'media.fields': media_fields, 'place.fields': place_fields, 'poll.fields': poll_fields, 'tweet.fields': tweet_fields, 'max_results': 100, 'user.fields': user_fields}
 
-query_params = {  'ids': '1605086055832915968'  , 'expansions': expansions, 'media.fields': media_fields, 'place.fields': place_fields, 'poll.fields': poll_fields, 'tweet.fields': tweet_fields, 'max_results': 100, 'user.fields': user_fields}
+#query_params = {'query': testing_cond , 'media.fields': media_fields, 'place.fields': place_fields, 'poll.fields': poll_fields, 'tweet.fields': tweet_fields, 'user.fields': user_fields}
+
+#query_params = {'query': 'conversation_id:1279940000004973111' } # lang:en', 'media.fields':media_fields}
+
+query_string = ''
+start_time = '2006-03-21T00:00:00Z'
+end_time = '2022-09-16T23:59:59Z'
+
+query_params = {'query': query_string, 'start_time': start_time, 'end_time': end_time, 'expansions': expansions, 'media.fields': media_fields, 'place.fields': place_fields, 'poll.fields': poll_fields, 'tweet.fields': tweet_fields, 'max_results': 100, 'user.fields': user_fields}
+
 
 def bearer_oauth(r):
     r.headers["Authorization"] = f"Bearer {bearer_token}"
@@ -46,7 +59,8 @@ def bearer_oauth(r):
 
 def connect_to_endpoint(url, params):
     while True:
-        response = requests.request("GET", search_url, auth=bearer_oauth, params=params)
+        response = requests.request("GET", url, auth=bearer_oauth, params=params)
+
         if response.status_code == 429:
             current_time = int(time.time())
             reset_time = int(response.headers["x-rate-limit-reset"])
@@ -58,12 +72,30 @@ def connect_to_endpoint(url, params):
         else:
             return response.json()
 
+def print_replies_of_conversation_id(id):
+    print(id)
+    query_string = "conversation_id:" + id
+    query_params["query"] = query_string
+
+    json_response = connect_to_endpoint(search_url, query_params)
+    print("Fetched response.")
+    data = [json_response]
+    while 'next_token' in json_response['meta']:
+        query_params['next_token'] = json_response['meta']['next_token']
+        json_response = connect_to_endpoint(search_url, query_params)
+        print("Fetched response.")
+        data.append(json_response)
+
+    result = {"batches": data}
+    print(result)
 
 def main():
     json_response = connect_to_endpoint(search_url, query_params)
     print("Fetched response.")
     data = [json_response]
     
+    print(json_response)
+
     while 'next_token' in json_response['meta']:
         query_params['next_token'] = json_response['meta']['next_token']
         json_response = connect_to_endpoint(search_url, query_params)
@@ -77,8 +109,11 @@ def main():
 
 if __name__ == "__main__":
     #main()
-    response = response = requests.request("GET", search_url, auth=bearer_oauth)
-    json_response = response.json()
-    data = [json_response]
-    print("Fetched response.")
-    print(json.dumps(json_response, indent=4, sort_keys=True))
+    
+    # response = response = requests.request("GET", search_url, auth=bearer_oauth)
+    # json_response = response.json()
+    # data = [json_response]
+    # print("Fetched response.")
+    # print(json.dumps(json_response, indent=4, sort_keys=True))
+
+    print_replies_of_conversation_id("1564682414206615552")

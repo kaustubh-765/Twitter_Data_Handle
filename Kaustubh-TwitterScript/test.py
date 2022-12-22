@@ -4,7 +4,8 @@ import datetime
 import dateutil.parser
 import unicodedata
 
-json_file = open('Kaustubh-TwitterScript/tweets_Diyi_Yang.json')
+json_file = open('Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json')
+
 
 jr = json.load(json_file)
 
@@ -50,14 +51,16 @@ jr = json.load(json_file)
 count = 0
 
 while count < 6:
-    for i in jr['batches'][count]['includes']['users']:
-        created_at = dateutil.parser.parse(i['created_at'])
-        name = i['name']
-        username = i['username']
-        description = i['description']
-        protected = i['protected']
-        id = i['id']
-        verified = i['verified']
+    for i in jr['batches'][count]['data']:
+
+        print((i['conversation_id']))
+        # created_at = dateutil.parser.parse(i['created_at'])
+        # name = i['name']
+        # username = i['username']
+        # description = i['description']
+        # protected = i['protected']
+        # id = i['id']
+        # verified = i['verified']
         
 
 
