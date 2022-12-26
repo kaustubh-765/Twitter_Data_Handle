@@ -6,28 +6,13 @@ import unicodedata
 import os
 
 
-json_file = open('Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json')
+json_file = open('Afghanistan-tweets-may.json')
 
 json_response = json.load(json_file)
 
 
-def determine_tweet_type(tweet):
-    # Check for reply indicator
-    if tweet["referenced_tweets.type"] == "replied_to":
-        tweet_type = "Reply Tweet"
-    # Check for quote tweet indicator
-    elif tweet["referenced_tweets.type"] == "quoted":
-        tweet_type = "Quote Tweet"
-    # Check for retweet indicator
-    elif tweet["referenced_tweets.type"] == "retweeted":
-        tweet_type = "Retweet"
-    else:
-        tweet_type = "Original Tweet"
-
-
-
 def create_csv_file():
-    csvFile = open("test_original_data.csv", "a", newline="", encoding='utf-8')
+    csvFile = open("data.csv", "a", newline="", encoding='utf-8')
     csvWriter = csv.writer(csvFile)
 
     #Create headers for the data you want to save, in this example, we only want save these columns in our dataset
@@ -64,7 +49,8 @@ def append_to_csv(json_response):
 
     #A counter variable
     counter = 1
-    fileName = 'test_original_data.csv'
+    count = 0
+    fileName = 'New folder/data.csv'
 
     #Open OR create the target CSV file
     csvFile = open(fileName, "a", newline="", encoding='utf-8')
@@ -73,16 +59,16 @@ def append_to_csv(json_response):
     #Loop through each tweet
     
     for respon in json_response['batches']:
-    
+
+        
         for tweet in respon['data']:
             
             # We will create a variable for each since some of the keys might not exist for some tweets
             # So we will account for that
 
-            # Tweet fields
+        # Tweet fields
             # 1. Author ID
             author_id = tweet['author_id']
-
 
             #in_reply_to_user_id
             in_reply_to_user_id = ""
@@ -96,13 +82,11 @@ def append_to_csv(json_response):
 
             #referenced_tweets
             referenced_tweets = ""
-            type = []
             if ('referenced_tweets' in tweet):
                 for i in tweet['referenced_tweets']:
                     oi = i['type']
                     po = i['id']
-                    referenced_tweets = [oi, po]
-                    type.append(oi)
+                    referenced_tweets = [oi, po] 
             else:
                 referenced_tweets = ""
 
@@ -191,7 +175,7 @@ def append_to_csv(json_response):
                     for i in (tweet['entities']['cashtags']):
                         cashtag.append(i['tag'])
 
-        
+           
             #context annotations
 
             context_annotations = []
@@ -204,46 +188,48 @@ def append_to_csv(json_response):
 
                     context_annotations.append(po)
 
-            if (referenced_tweets == "" and conversation_id == id):
-                # Assemble all data in a list
-                res = [
-                    counter,
-                    id,
-                    author_id , 
-                    conversation_id ,
-                    created_at ,
-                    geo,
-                    lang,
-                    mentions,
-                    url, 
-                    annotations,
-                    cashtag,
-                    hashtag,
-                    in_reply_to_user_id,
-                    retweet_count,
-                    reply_count,
-                    like_count,
-                    quote_count,
-                    attachments_media_keys,
-                    attachments_poll_ids,
-                    possibly_sensitive,
-                    referenced_tweets,
-                    reply_settings,
-                    source,
-                    text,
-                    context_annotations
-                ]
-                
-                # Append the result to the CSV file
-                csvWriter.writerow(res)
-                counter += 1
+            # Assemble all data in a list
+            res = [
+                counter,
+                id,
+                author_id , 
+                conversation_id ,
+                created_at ,
+                geo,
+                lang,
+                mentions,
+                url, 
+                annotations,
+                cashtag,
+                hashtag,
+                in_reply_to_user_id,
+                retweet_count,
+                reply_count,
+                like_count,
+                quote_count,
+                attachments_media_keys,
+                attachments_poll_ids,
+                possibly_sensitive,
+                referenced_tweets,
+                reply_settings,
+                source,
+                text,
+                context_annotations
+            ]
+            
+            # Append the result to the CSV file
+            csvWriter.writerow(res)
+            counter += 1        
+
+        count += 1
         # When done, close the CSV file
     csvFile.close()
     # Print the number of tweets for this iteration    
     print("# of Tweets added from this response: ", counter-1) 
 
 
-if not(os.path.exists('test_original_data.csv')):
+
+if not(os.path.exists('New folder/data.csv')):
     create_csv_file()
 
 append_to_csv(json_response = json_response)
@@ -341,5 +327,3 @@ withheld
 #   return list(getkeys(obj,[])), list(getvalues(obj))
 
 # print(getitems(json_response))
-
-

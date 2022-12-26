@@ -1,7 +1,9 @@
-import requests
 import json
+import requests
+import os
 import time
 from time import localtime
+
 
 # Put bearer token here
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAJF6IQEAAAAARkYD8uKFUDZT0R%2BWzdkYNfc9bFw%3DWU7slkHso0Kn6U7vivUaK3aGrHnHm19blQ8vCoXabA2vFV34DU"
@@ -24,20 +26,14 @@ user_fields = 'created_at,description,entities,id,location,name,pinned_tweet_id,
 # set start time YYYY-MM-DDTHH:mm:ssZ
 # TODO: max_results = 500?
 
-# query_string_conversation_id = 'conversation_id:1334987486343299072'
-# 'has:geo' for only geo tagged tweets, 'lang:', 'is:quote'
 
-# query_string_keywords_and_hashtags = 'from:MagnusCarlsen'
+# Opening the JSON file to access data
 
-# input_file_names = [
-#     "tweets_aliciagarza.json",
-#     "tweets_Amira_Adawe.json",
-#     "tweets_anandmahindra.json",
-#     "tweets_anishgiri.json",
-#     "tweets_AnnaRogers.json"
-# ]  # relative path
 
-input_file_name = [ 'Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json' ]
+file_name = "Original_tweets_in_json.json"
+
+json_file = open(file_name)
+json_response = json.load(json_file)
 
 query_string = ''
 start_time = '2006-03-21T00:00:00Z'
@@ -50,9 +46,10 @@ def bearer_oauth(r):
     r.headers["User-Agent"] = "v2FullArchiveSearchPython"
     return r
 
+
 def connect_to_endpoint(url, params):
     while True:
-        response = requests.request("GET", search_url, auth=bearer_oauth, params=params)
+        response = requests.request("GET", url, auth=bearer_oauth, params=params)
         if response.status_code == 429:
             current_time = int(time.time())
             reset_time = int(response.headers["x-rate-limit-reset"])
@@ -65,81 +62,33 @@ def connect_to_endpoint(url, params):
         else:
             return response.json()
 
-def print_replies(input_file_name):
-    with open(input_file_name, 'r', encoding='utf-8') as input_file:
-        json_object = json.load(input_file)
 
-    for batch in json_object["batches"]:
-        if "data" in batch:
-            for tweet in batch["data"]:
-                if tweet["id"] == tweet["conversation_id"]:
-                    is_retweet = False
-                    if 'referenced_tweets' in tweet and len(tweet["referenced_tweets"]) == 1:
-                        if(tweet["referenced_tweets"][0]["type"] == "retweeted"):
-                            is_retweet = True
-                    if (is_retweet):
-                        print_replies_of_conversation_id_retweeted(tweet["id"], input_file_name, 
-                            tweet["referenced_tweets"][0]["id"], tweet["author_id"])
-                    else:
-                        print_replies_of_conversation_id(tweet["id"], input_file_name)
-
-def print_replies_of_conversation_id_retweeted(id_file_name, input_file_name, id, author_id):
+def tweets_of_in_reply_to_tweet_id(id):
     print(id)
-    query_string = "conversation_id:" + id
+    query_string = "in_reply_to_tweet_id:" + id
     query_params["query"] = query_string
 
     json_response = connect_to_endpoint(search_url, query_params)
     print("Fetched response.")
-
-    temp = []
-
-    # print(json.dumps(json_response["data"], indent=4))
-
-    for tweet in json_response["data"]:
-        has_mention = False
-        if("entities" in tweet):
-            if("mentions" in tweet["entities"]):
-                if("id" in tweet["entities"]["mentions"]):
-                    print("Hi")
-                    if(tweet["entities"]["mentions"]["id"] == author_id):
-                        has_mention = True
-        if(has_mention):
-            temp.append(tweet)
-
-    json_response["data"] = temp
-
     data = [json_response]
     while 'next_token' in json_response['meta']:
         query_params['next_token'] = json_response['meta']['next_token']
         json_response = connect_to_endpoint(search_url, query_params)
         print("Fetched response.")
-
-        temp = []
-
-        for tweet in json_response["data"]:
-            has_mention = False
-            if("entities" in tweet and tweet["entities"]):
-                if("mentions" in tweet["entities"] and "username" in tweet["entities"]["mentions"]):
-                    if(tweet["entities"]["mentions"]["username"] == author_id):
-                        has_mention = True
-            if(has_mention):
-                temp.append(tweet)
-
-        json_response["data"] = temp
-
         data.append(json_response)
 
     result = {"batches": data}
-    folder_name = input_file_name[:-5]
-    print(folder_name)
-    output_file_name = folder_name + "/" + id_file_name + ".json"
+    #print(result)
+
+    output_file_name = "replied_to_" + id + ".json"
     print(output_file_name)
     with open(output_file_name, "w", encoding='utf-8') as output_file:
         output_file.write(json.dumps(result, indent=4))
 
     print("exiting")
 
-def print_replies_of_conversation_id(id):
+
+def tweets_of_retweets_of_tweet_id(id):
     print(id)
     query_string = "retweets_of_tweet_id:" + id
     query_params["query"] = query_string
@@ -154,19 +103,29 @@ def print_replies_of_conversation_id(id):
         data.append(json_response)
 
     result = {"batches": data}
-    print(result)
-    folder_name = input_file_name[:-5]
-    print(folder_name)
-    output_file_name = folder_name + "/" + id + ".json"
+    #print(result)
+
+    output_file_name = "retweets_" + id + ".json"
     print(output_file_name)
     with open(output_file_name, "w", encoding='utf-8') as output_file:
         output_file.write(json.dumps(result, indent=4))
 
-    print("exiting")
+
+def main():
+    
+    print("1. To get the replied to tweets of the original tweets")
+    print("2. To get the retweeted tweets of the original tweets")
+    choice = int(input("Enter your choice:"))
+
+
+    for response in json_response['batches']:
+        for tweet in response['data']:
+            if choice == 1:
+                tweets_of_in_reply_to_tweet_id(tweet['conversation_id'])
+            
+            elif choice == 2:
+                tweets_of_retweets_of_tweet_id(tweet['conversation_id'])
+
 
 if __name__ == "__main__":
-    #for input_file_name in input_file_names:
-    #print_replies("Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json")
-    # print_replies_of_conversation_id_retweeted("123", input_file_names[0], "1579307582078222336", "1556654184732233729")
-
-    print_replies_of_conversation_id("1565002386879328257")
+    main()
