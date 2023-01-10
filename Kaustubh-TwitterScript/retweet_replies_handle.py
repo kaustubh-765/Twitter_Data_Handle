@@ -29,12 +29,11 @@ user_fields = 'created_at,description,entities,id,location,name,pinned_tweet_id,
 
 # Opening the JSON file to access data
 
-
 file_name = "Original_tweets_in_json.json"
-
 
 json_file = open(file_name)
 json_response = json.load(json_file)
+
 
 query_string = ''
 start_time = '2006-03-21T00:00:00Z'
@@ -64,7 +63,7 @@ def connect_to_endpoint(url, params):
             return response.json()
 
 
-def tweets_of_in_reply_to_tweet_id(id):
+def tweets_of_in_reply_to_tweet_id(id, cid, pth):
     print(id)
     query_string = "in_reply_to_tweet_id:" + id
     query_params["query"] = query_string
@@ -81,66 +80,57 @@ def tweets_of_in_reply_to_tweet_id(id):
     result = {"batches": data}
     #print(result)
 
-    folder_name = "Reply_to"
-    output_file_name = folder_name + "/" +"replied_to_" + id + ".json"
+    output_file_name = pth + "/replied_to_" + id + "__" + cid + ".json"
     print(output_file_name)
     with open(output_file_name, "w", encoding='utf-8') as output_file:
         output_file.write(json.dumps(result, indent=4))
 
     print("exiting")
 
-
-def tweets_of_retweets_of_tweet_id(id):
-    print(id)
-    query_string = "retweets_of_tweet_id:" + id
-    query_params["query"] = query_string
-
-    json_response = connect_to_endpoint(search_url, query_params)
-    print("Fetched response.")
-    data = [json_response]
-    while 'next_token' in json_response['meta']:
-        query_params['next_token'] = json_response['meta']['next_token']
-        json_response = connect_to_endpoint(search_url, query_params)
-        print("Fetched response.")
-        data.append(json_response)
-
-    result = {"batches": data}
-    #print(result)
-    
-    folder_name = "Retweet"
-    output_file_name = folder_name + "/" + "retweets_" + id + ".json"
-
-    print(output_file_name)
-    with open(output_file_name, "w", encoding='utf-8') as output_file:
-        output_file.write(json.dumps(result, indent=4))
-
-
 def main():
-    
+
+    json_rspnse = ""
+
     try:
         os.mkdir("Retweet")
     except OSError as error:
         print(error)
 
     try:
-        os.mkdir("Reply_to")
+        os.mkdir("Retweet/Replies")
     except OSError as error:
         print(error)
 
-
-
-    print("1. To get the replied to tweets of the original tweets")
-    print("2. To get the retweeted tweets of the original tweets")
-    choice = int(input("Enter your choice:"))
-
-
+    
+    
     for response in json_response['batches']:
         for tweet in response['data']:
-            if choice == 1 and tweet['public_metrics']['reply_count'] != 0:
-                tweets_of_in_reply_to_tweet_id(tweet['conversation_id'])
-            
-            elif choice == 2 and tweet['public_metrics']['retweet_count'] != 0:
-                tweets_of_retweets_of_tweet_id(tweet['conversation_id'])
+
+            if tweet['public_metrics']['retweet_count'] != 0:
+                fl_name = "Retweet/" + "retweets_"+tweet['conversation_id']+".json"
+
+                if (not (os.path.exists(fl_name))):
+                    continue
+                
+                if tweet['public_metrics']['reply_count'] !=0:
+                    dir_path = "Retweet/Replies/" + tweet['conversation_id']
+
+
+                    try:
+                        os.mkdir(dir_path)
+                    except OSError as error:
+                        print(error)
+
+
+                json_file = open(fl_name)
+                json_rspnse = json.load(json_file)
+
+
+
+            for re_response in json_rspnse['batches']:
+                for twts in re_response['data']:
+                    if (twts['public_metrics']['reply_count'] != 0):
+                        tweets_of_in_reply_to_tweet_id(twts['conversation_id'], tweet['conversation_id'], dir_path)
 
 
 if __name__ == "__main__":
