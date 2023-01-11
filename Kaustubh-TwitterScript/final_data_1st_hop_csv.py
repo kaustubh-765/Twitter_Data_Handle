@@ -18,14 +18,75 @@ def create_csv_file():
     csvWriter = csv.writer(csvFile)
 
     csvWriter.writerow([
-        "","","","","","",""
+        "","","","","","","","1st Hop Replies", "","2nd Hop Replies", "", "Tweet receiving\n(How Much)","" 
     ])
 
     csvWriter.writerow([
-       "SNo.","Tweet Id","","Tweet Text","", "No. of Likes", "No. of Retweets"  
+       "SNo.","Tweet Id","","Tweet Text","", "No. of Likes", "No. of Retweets", "Reply", "", "Reply", "", "IS", "ES", "Remarks"
     ])
 
     csvFile.close()
+
+
+def retweet_replies(id):
+    
+    file_retweet_name = "Retweet/" + "retweets_"+id+".json"
+
+    #Error -- File not taking texts from all the other tweets, only one tweet text is being added.
+
+    if (not (os.path.exists(file_retweet_name))):
+        print("The path : "+file_retweet_name+" Doesn't exist")
+        return []
+
+    js_fl = open(file_retweet_name)
+    js_rsps = json.load(js_fl)
+
+    reply_2nd_hop = []
+
+    for rspn in js_rsps['batches']:
+        for twets in rspn['data']:
+            dir_path = "Retweet/Replies/" + id
+            input_file_name = dir_path + "/replied_to_" + twets['conversation_id'] + "__" + id + ".json"
+            print(input_file_name)
+            if (not (os.path.exists(input_file_name))):
+                print("The path : "+input_file_name+" Doesn't exist")
+                continue
+
+            j_r = open(input_file_name)
+            j_r_s = json.load(j_r)
+
+            for reply_response in j_r_s['batches']:
+                for reply_tweet in reply_response['data']:
+                    reply_2nd_hop.append(reply_tweet['text'])
+    
+    print(reply_2nd_hop)
+    return reply_2nd_hop
+
+def reply_to_file(id):
+    
+    file_reply_name = "Reply_to/" + "replied_to_"+id+".json"
+
+    #print(file_reply_name)Reply_to
+
+    if (not (os.path.exists(file_reply_name))):
+        #print("The path : "+file_reply_name+" Doesn't exist")
+        return []
+
+    json_file = open(file_reply_name)
+    json_rspnse = json.load(json_file)
+
+    reply_1st_hop = []
+
+    for re_response in json_rspnse['batches']:
+        if ("data" in re_response):
+            for twts in re_response["data"]:
+                if (twts['public_metrics']['reply_count'] != 0):
+                    text_1 = twts['text']
+                    reply_1st_hop.append(text_1)
+    
+    return reply_1st_hop
+
+
 
 def append_to_CSV(json_response):
     
@@ -46,23 +107,13 @@ def append_to_CSV(json_response):
             like_count = tweet['public_metrics']['like_count']
             retweet_count = tweet['public_metrics']['retweet_count']
 
-            fl_name = "Reply/" + "retweets_"+tweet['conversation_id']+".json"
-
-            if (not (os.path.exists(fl_name))):
-                continue
-
-            json_file = open(fl_name)
-            json_rspnse = json.load(json_file)
-
-
-
-            for re_response in json_rspnse['batches']:
-                for twts in re_response['data']:
-                    if (twts['public_metrics']['reply_count'] != 0):
-                        tweets_of_in_reply_to_tweet_id(twts['conversation_id'], tweet['conversation_id'])
-
-
-            res = [counter, id, text, "", "", like_count, retweet_count]
+            
+            reply_1st_hop = reply_to_file(tweet['conversation_id'])
+            reply_2nd_hop = retweet_replies(tweet['conversation_id'])
+           
+                
+            #print(text)
+            res = [counter, id, text, "", "", like_count, retweet_count, reply_1st_hop, "", reply_2nd_hop, ""]
 
             csvWriter.writerow(res)
             counter += 1        
