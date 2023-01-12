@@ -3,7 +3,7 @@ import csv
 import os
 
 
-json_file = open('E:/Twitter/Original_tweets_in_json.json')
+json_file = open('Afghanistan-tweets-may-original.json')
 json_response = ""
 
 try:
@@ -18,11 +18,11 @@ def create_csv_file():
     csvWriter = csv.writer(csvFile)
 
     csvWriter.writerow([
-        "","","","","","","","1st Hop Replies", "","2nd Hop Replies", "", "Tweet receiving\n(How Much)","" 
+        "","","","","","","","","","Replies 1st + 2nd"
     ])
 
     csvWriter.writerow([
-       "SNo.","Tweet Id","","Tweet Text","", "No. of Likes", "No. of Retweets", "Reply", "", "Reply", "", "IS", "ES", "Remarks"
+       "SNo.","Tweet Id","","Tweet Text","","Language", "No. of Likes", "No of Replies" ,"No. of Retweets", "Reply"
     ])
 
     csvFile.close()
@@ -58,13 +58,14 @@ def retweet_replies(id):
             for reply_response in j_r_s['batches']:
                 for reply_tweet in reply_response['data']:
                     reply_2nd_hop.append(reply_tweet['text'])
-    
-    print(reply_2nd_hop)
+                    reply_2nd_hop.append("")
+
+    #print(reply_2nd_hop)
     return reply_2nd_hop
 
 def reply_to_file(id):
     
-    file_reply_name = "Reply_to/" + "replied_to_"+id+".json"
+    file_reply_name = "Reply_to/" + "replied_"+id+".json"
 
     #print(file_reply_name)Reply_to
 
@@ -80,9 +81,14 @@ def reply_to_file(id):
     for re_response in json_rspnse['batches']:
         if ("data" in re_response):
             for twts in re_response["data"]:
-                if (twts['public_metrics']['reply_count'] != 0):
-                    text_1 = twts['text']
-                    reply_1st_hop.append(text_1)
+                #if (twts['public_metrics']['reply_count'] != 0):
+                text_1 = twts['text']
+                reply_1st_hop.append(text_1)
+                reply_1st_hop.append("")
+
+
+    print(file_reply_name)
+    #print(reply_1st_hop)
     
     return reply_1st_hop
 
@@ -106,14 +112,15 @@ def append_to_CSV(json_response):
             text = tweet['text']
             like_count = tweet['public_metrics']['like_count']
             retweet_count = tweet['public_metrics']['retweet_count']
-
+            lang = tweet['lang']
+            reply_count = tweet['public_metrics']['reply_count']
             
             reply_1st_hop = reply_to_file(tweet['conversation_id'])
-            reply_2nd_hop = retweet_replies(tweet['conversation_id'])
-           
+            #reply_2nd_hop = retweet_replies(tweet['conversation_id'])
+            reply_2nd_hop = []           
                 
             #print(text)
-            res = [counter, id, text, "", "", like_count, retweet_count, reply_1st_hop, "", reply_2nd_hop, ""]
+            res = [counter, id, text, "", "", lang ,like_count, reply_count ,retweet_count] +  reply_1st_hop + [ "", "Replies of Retweet", "" ] +  reply_2nd_hop + [""]
 
             csvWriter.writerow(res)
             counter += 1        
