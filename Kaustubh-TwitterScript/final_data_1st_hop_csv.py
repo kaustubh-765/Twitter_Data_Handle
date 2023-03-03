@@ -1,7 +1,16 @@
 import json
 import csv
 import os
+from emot.emo_unicode import UNICODE_EMOJI, UNICODE_EMOJI_ALIAS, EMOTICONS_EMO
+from flashtext import KeywordProcessor
 
+## formatting
+all_emoji_emoticons = {**EMOTICONS_EMO,**UNICODE_EMOJI_ALIAS, **UNICODE_EMOJI_ALIAS}
+all_emoji_emoticons = {k:v.replace(":","|").replace("_"," ").strip() for k,v in all_emoji_emoticons.items()}
+
+kp_all_emoji_emoticons = KeywordProcessor()
+for k,v in all_emoji_emoticons.items():
+    kp_all_emoji_emoticons.add_keyword(k, v)
 
 json_file = open('Afghanistan-tweets-may-original.json')
 json_response = ""
@@ -57,7 +66,8 @@ def retweet_replies(id):
 
             for reply_response in j_r_s['batches']:
                 for reply_tweet in reply_response['data']:
-                    reply_2nd_hop.append(reply_tweet['text'])
+                    test = kp_all_emoji_emoticons.replace_keywords(reply_tweet['text'])
+                    reply_2nd_hop.append(test)
                     reply_2nd_hop.append("")
 
     #print(reply_2nd_hop)
@@ -82,8 +92,8 @@ def reply_to_file(id):
         if ("data" in re_response):
             for twts in re_response["data"]:
                 #if (twts['public_metrics']['reply_count'] != 0):
-                text_1 = twts['text']
-                reply_1st_hop.append(text_1)
+                test = kp_all_emoji_emoticons.replace_keywords(twts['text'])
+                reply_1st_hop.append(test)
                 reply_1st_hop.append("")
 
 

@@ -3,7 +3,7 @@ import json
 import time
 
 # Put bearer token here
-bearer_token = "AAAAAAAAAAAAAAAAAAAAAJF6IQEAAAAARkYD8uKFUDZT0R%2BWzdkYNfc9bFw%3DWU7slkHso0Kn6U7vivUaK3aGrHnHm19blQ8vCoXabA2vFV34DU"
+bearer_token = "SOME_TOKEN"
 
 search_url = "https://api.twitter.com/2/tweets/search/all"
 
