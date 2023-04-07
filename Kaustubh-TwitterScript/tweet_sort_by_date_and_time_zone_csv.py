@@ -1,12 +1,11 @@
 import json
 from datetime import datetime
-import csv
 
-time_zones = ["00:00:00","04:00:00","08:00:00","12:00:00","16:00:00","20:00:00", "23:59:59"]
+time_zones = ["00:00:00","06:00:00","12:00:00","18:00:00", "23:59:59"]
 
 i = 0
 
-while i<7:
+while i<5:
 	time_zones[i] = datetime.strptime(time_zones[i], '%H:%M:%S').time()
 	i = i+1
 
@@ -41,9 +40,12 @@ def get_total_dates():
 
 print(type(time_zones[0]))
 
-def print_tweet_counts_by_date_and_total_tweets():
+def print_tweet_counts_by_date_and_total_tweets(dt):
 
-	tweet_dates = get_total_dates()
+	freq_on_day = []
+	tot_per_head = 0
+
+	#tweet_dates = get_total_dates()
 
 
 	input_file_name = 'Original_tweets_in_json.json'
@@ -55,177 +57,106 @@ def print_tweet_counts_by_date_and_total_tweets():
 	with open(input_file_name, 'r') as input_file:
 		json_object = json.load(input_file)
 
-	for dt in tweet_dates:
-		output_file_name_by_date = f"Original_tweets_count_by_date_and_time_zone_{dt}.csv"
-		output_file_name_total_tweets = f"Original_tweets_count_{dt}.txt"
-		
-		output_file = open(output_file_name_by_date, "w", newline="", encoding='utf-8')
-		csv_writer = csv.writer(output_file)
-		
-		total_frequency = 0
-
-		frequency = {}
-		print("Date: ",dt, file=output_file)
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[0], file=output_file)
-
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and (time_sq >= time_zones[0]) and (time_sq < time_zones[1]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
-
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
-
-		for key, value in frequency.items():
-			total_frequency += value
-
-		frequency = {}
-		
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[1], file=output_file)
-
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and(time_sq >= time_zones[1]) and (time_sq < time_zones[2]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
-
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
-
-		for key, value in frequency.items():
-			total_frequency += value
-
-		frequency = {}
-		
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[2], file=output_file)
-
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and(time_sq >= time_zones[2]) and (time_sq < time_zones[3]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
-
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
-
-		for key, value in frequency.items():
-			total_frequency += value
-
-		frequency = {}
-		
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[3], file=output_file)
-
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and(time_sq >= time_zones[3]) and (time_sq < time_zones[4]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
-
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
-
-		for key, value in frequency.items():
-			total_frequency += value
-
-
 		frequency = {}
 
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[4], file=output_file)
+	#for dt in tweet_dates:
+	for batch in json_object["batches"]:
+		if "data" not in batch:
+			continue
+		for tweet in batch["data"]:
+			if "created_at" in tweet:
+				if tweet['lang'] == 'en':
+					iso_date = tweet["created_at"]
+					date = iso_date[0:10]
+					time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
+					#print(time_sq)
+					#print(date)
+					if (date == dt) and (time_sq >= time_zones[0]) and (time_sq < time_zones[1]):
+						frequency[time_sq] = frequency.get(time_sq, 0) + 1 
 
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and(time_sq >= time_zones[4]) and (time_sq < time_zones[5]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
+	tot_per_head = 0
+	
+	for date, count in frequency.items():
+		tot_per_head += count
+		#print(date, ": ", count, sep='', file=output_file)
 
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
+	freq_on_day.append(tot_per_head)
 
-		for key, value in frequency.items():
-			total_frequency += value
+	frequency = {}
+	
+
+	for batch in json_object["batches"]:
+		if "data" not in batch:
+			continue
+		for tweet in batch["data"]:
+			if "created_at" in tweet:
+				if tweet['lang'] == 'en':
+					iso_date = tweet["created_at"]
+					date = iso_date[0:10]
+					time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
+					#print(time_sq)
+					#print(date)
+					if (date == dt) and(time_sq >= time_zones[1]) and (time_sq < time_zones[2]):
+						frequency[time_sq] = frequency.get(time_sq, 0) + 1 
+	
+	tot_per_head = 0
 
 
+	for date, count in frequency.items():
+		tot_per_head += count
+		#print(date, ": ", count, sep='', file=output_file)
 
-		frequency = {}
-		print("\n\n", file=output_file)	
-		print("Time Zone:" , time_zones[5], file=output_file)
+	freq_on_day.append(tot_per_head)
 
-		for batch in json_object["batches"]:
-			if "data" not in batch:
-				continue
-			for tweet in batch["data"]:
-				if "created_at" in tweet:
-					if tweet['lang'] == 'en':
-						iso_date = tweet["created_at"]
-						date = iso_date[0:10]
-						time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
-						print(time_sq)
-						print(date)
-						if (date == dt) and (time_sq >= time_zones[5]) and (time_sq < time_zones[6]):
-							frequency[time_sq] = frequency.get(time_sq, 0) + 1 
+	frequency = {}
 
-		for date, count in frequency.items():
-			print(date, ": ", count, sep='', file=output_file)
+	for batch in json_object["batches"]:
+		if "data" not in batch:
+			continue
+		for tweet in batch["data"]:
+			if "created_at" in tweet:
+				if tweet['lang'] == 'en':
+					iso_date = tweet["created_at"]
+					date = iso_date[0:10]
+					time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
+					#print(time_sq)
+					#print(date)
+					if (date == dt) and(time_sq >= time_zones[2]) and (time_sq < time_zones[3]):
+						frequency[time_sq] = frequency.get(time_sq, 0) + 1 
 
-		for key, value in frequency.items():
-			total_frequency += value
+	tot_per_head = 0
 
-		
-		output_file.close()
-		input_file.close()
+	for date, count in frequency.items():
+		tot_per_head += count
+		#print(date, ": ", count, sep='', file=output_file)
 
-		
-		output_file = open(output_file_name_total_tweets, "w")
-		print("Date: ",dt, file=output_file)
-		print(total_frequency, file=output_file)
-		output_file.close()
+	freq_on_day.append(tot_per_head)
 
-if __name__ == "__main__":
-	print_tweet_counts_by_date_and_total_tweets()
+	frequency = {}
+	
+
+	for batch in json_object["batches"]:
+		if "data" not in batch:
+			continue
+		for tweet in batch["data"]:
+			if "created_at" in tweet:
+				if tweet['lang'] == 'en':
+					iso_date = tweet["created_at"]
+					date = iso_date[0:10]
+					time_sq = datetime.strptime(iso_date[11:19],'%H:%M:%S').time()
+					#print(time_sq)
+					#print(date)
+					if (date == dt) and(time_sq >= time_zones[3]) and (time_sq < time_zones[4]):
+						frequency[time_sq] = frequency.get(time_sq, 0) + 1 
+
+	tot_per_head = 0
+
+	for date, count in frequency.items():
+		tot_per_head += count
+		#print(date, ": ", count, sep='', file=output_file)
+
+	freq_on_day.append(tot_per_head)
+
+	return freq_on_day
+
 	
