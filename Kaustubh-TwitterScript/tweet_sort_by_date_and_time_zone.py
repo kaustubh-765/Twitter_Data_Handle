@@ -45,7 +45,7 @@ def print_tweet_counts_by_date_and_total_tweets():
 	tweet_dates = get_total_dates()
 
 
-	input_file_name = 'Original_tweets_in_json.json'
+	input_file_name = 'data/Afghanistan-tweets-April24-original.json'
 
 	# "Twitter_Data_Handle/Kaustubh-TwitterScript/tweets_Diyi_Yang.json"
 	# "C:/Users/LNMIIT/Desktop/Data/Afghanistan-2021/April-2021/Afghanistan-tweets-April30-original.json"  # relative path
@@ -88,6 +88,8 @@ def print_tweet_counts_by_date_and_total_tweets():
 		for key, value in frequency.items():
 			total_frequency += value
 
+		print(total_frequency)
+
 		frequency = {}
 		
 		print("\n\n", file=output_file)	
@@ -112,6 +114,8 @@ def print_tweet_counts_by_date_and_total_tweets():
 
 		for key, value in frequency.items():
 			total_frequency += value
+		
+		print(total_frequency)
 
 		frequency = {}
 		
@@ -137,6 +141,8 @@ def print_tweet_counts_by_date_and_total_tweets():
 
 		for key, value in frequency.items():
 			total_frequency += value
+		
+		print(total_frequency)
 
 		frequency = {}
 		
@@ -163,6 +169,7 @@ def print_tweet_counts_by_date_and_total_tweets():
 		for key, value in frequency.items():
 			total_frequency += value
 
+		print(total_frequency)
 
 		frequency = {}
 
@@ -189,7 +196,7 @@ def print_tweet_counts_by_date_and_total_tweets():
 		for key, value in frequency.items():
 			total_frequency += value
 
-
+		print(total_frequency)
 
 		frequency = {}
 		print("\n\n", file=output_file)	
@@ -225,6 +232,6 @@ def print_tweet_counts_by_date_and_total_tweets():
 		print(total_frequency, file=output_file)
 		output_file.close()
 
-if __name__ == "__main__":
-	print_tweet_counts_by_date_and_total_tweets()
+# if __name__ == "__main__":
+# 	print_tweet_counts_by_date_and_total_tweets()
 	

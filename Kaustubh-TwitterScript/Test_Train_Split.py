@@ -2,15 +2,22 @@ import json
 import csv
 import os
 import random, re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 import pandas as pd
 import tweet_sort_by_date_and_time_zone_csv as tw
+import math
 
+# Data_of_month = 'April'
+# date = "2021-04-24"
+# Date = int(date[8:10])
+# Month = int(date[5:7])
+original_tweet = 'data/Afghanistan-tweets-April24-original.json'
 
-original_tweet = "Original_tweets_in_json.json"
+total_date_list = tw.get_total_dates(original_tweet)
+
 train_split_file = "train_split.csv"
 test_split_file = "test_split.csv"
-frequency_count = "Twitter_Data_Handle\Kaustubh-TwitterScript\Data (version 1).xlsx"
+frequency_count = "Twitter_Data_Handle/Kaustubh-TwitterScript/Data (version 1).xlsx"
 
 try:
     tt = open(original_tweet)
@@ -21,7 +28,7 @@ except OSError as error:
    exit()
 
 xls = pd.ExcelFile(frequency_count)
-df1 = pd.read_excel(xls, 'english_original')
+df1 = pd.read_excel(xls, 'Sample_count')
 
 col_list = []
 
@@ -29,18 +36,51 @@ for col in df1.columns:
     col_list.append(col)
 
 
+sample_data = df1['April_sample_count'].tolist()
+cal_data = df1['April_final_count'].tolist()
+
+
+
+def almost_matches(str1, str2):
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"  # Change the format to match your datetime string
+    
+    # Parse the datetime from the strings
+    dt1 = datetime.strptime(str1, date_format)
+    dt2 = datetime.strptime(str2, date_format)
+    
+    # Check if the dates match exactly and the hours are within 1 hour of each other
+    # if dt1.date() == dt2.date() and abs(dt1.hour - dt2.hour) <= 1:
+    if dt1.date() == dt2.date() and abs(dt1.hour - dt2.hour) <= 1 and abs(dt1.minute - dt2.minute) <= 1:
+        return True
+    else:
+        return False
+
+def almost_matches_per_30_min(str1, str2):
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"  # Change the format to match your datetime string
+    
+    # Parse the datetime from the strings
+    dt1 = datetime.strptime(str1, date_format)
+    dt2 = datetime.strptime(str2, date_format)
+    
+    # Check if the dates match exactly and the hours are within 1 hour of each other
+    # if dt1.date() == dt2.date() and abs(dt1.hour - dt2.hour) <= 1:
+    if dt1.date() == dt2.date() and abs(dt1.hour - dt2.hour) <= 1 and abs(dt1.minute - dt2.minute) <= 30:
+        return True
+    else:
+        return False
+
 def train_test_csv_header():
     csvFile_1 = open(train_split_file, "a", newline="", encoding='utf-8')
     csvFile_2 = open(test_split_file, "a", newline="", encoding='utf-8')
 
     csvWriter = csv.writer(csvFile_1)
 
-    csvWriter.writerow(['Sno.', 'ID', 'Text', 'Like Count', 'Reply Count', 'Retweet Count'])
+    csvWriter.writerow(['Sno.','Author_ID', 'ID', 'Text', 'Like Count', 'Reply Count', 'Retweet Count'])
     csvFile_1.close()
 
     csvWriter = csv.writer(csvFile_2)
 
-    csvWriter.writerow(['Sno.', 'ID', 'Text', 'Like Count', 'Reply Count', 'Retweet Count'])
+    csvWriter.writerow(['Sno.', 'Author_ID' , 'ID', 'Text', 'Like Count', 'Reply Count', 'Retweet Count'])
     csvFile_1.close()
 
 def random_time(date, i, j ,time_slot, rng):
@@ -49,23 +89,23 @@ def random_time(date, i, j ,time_slot, rng):
     new_string = ""
 
     if(time_slot == 0):    
-        start = datetime(min_year, i+3, j, 00, 00,00)
-        end = datetime(min_year, i+3, j, 5, 59, 00)
+        start = datetime(min_year, i, j, 00, 00,00)
+        end = datetime(min_year, i, j, 5, 59, 00)
 
     
     if(time_slot == 1):    
-        start = datetime(min_year, i+3, j, 6, 00, 00)
-        end = datetime(min_year, i+3, j, 11, 59, 00)
+        start = datetime(min_year, i, j, 6, 00, 00)
+        end = datetime(min_year, i, j, 11, 59, 00)
 
     
     if(time_slot == 2):    
-        start = datetime(min_year, i+3, j, 12, 00,00)
-        end = datetime(min_year, i+3, j, 17, 59, 00)
+        start = datetime(min_year, i, j, 12, 00,00)
+        end = datetime(min_year, i, j, 17, 59, 00)
 
     
     if(time_slot == 3):    
-        start = datetime(min_year, i+3, j, 18, 00,00)
-        end = datetime(min_year, i+3, j, 23, 59, 00)
+        start = datetime(min_year, i, j, 18, 00,00)
+        end = datetime(min_year, i, j, 23, 59, 00)
 
     total_list = []
 
@@ -77,72 +117,101 @@ def random_time(date, i, j ,time_slot, rng):
         new_string = random_date[:index] + '000Z'
         total_list.append(new_string)
 
-    return new_string
+    return total_list
         
 
 def train_split():
 
-    date = tw.get_total_dates()
+    # date = tw.get_total_dates()
 
+    sum_of_range = 0
     csvFile_1 = open(train_split_file, "a", newline="", encoding='utf-8')
     csvWriter = csv.writer(csvFile_1)
+    sno = 1
+    
+    for date in total_date_list:
+        Date = int(date[8:10])
+        Month = int(date[5:7])
+        
+        list_slot_wise = tw.print_tweet_counts_by_date_and_total_tweets(date, original_tweet)
+        print(list_slot_wise)
+        
+        print(f"Iterating for Date : {date}")
 
-    i = 1
+        time_slot = 0
+        
+        while (time_slot < 4):
 
-    while i<6:
-        mon_data = df1.loc[:,col_list[i]]
-        j=1
-        while j<31:
-            
-            date_for_count = datetime(2021, i+3, j , 00, 00, 00)
+            print(f"Time Slot : {time_slot}")
+            _range = list_slot_wise[time_slot]*cal_data[Date]
+            _range = int(math.ceil(_range))
+            print(f"Range for this slot : {_range}")
+            sum_of_range += _range
+            tweet_time = random_time(date = date,i=Month,j=Date, time_slot=time_slot, rng = _range)
+            print(tweet_time)
+            counter = 0
+            for response in org_tweet['batches']:
+                for tweets in response['data']:
+                    
+                    for dt in tweet_time:
+                        tweet_time_loops = tweets['created_at']
 
-            list_slot_wise = tw.print_tweet_counts_by_date_and_total_tweets(date)
-
-            time_slot = 0
-
-            while (time_slot < 4):
-                tweet_time = random_time(date = date_for_count,i=i,j=j, time_slot=time_slot, rng = list_slot_wise[time_slot])
-                counter = 0
-                print("Done_233")
-                for response in org_tweet['batches']:
-                    for tweets in response['data']:
+                        # date_present = tweet_time_loops[0:10]
+                        # time_sq = datetime.strptime(tweet_time_loops[11:19],'%H:%M:%S').time()
+                        # tweet_time = f"{date_present} {time_sq}"
+                        # dt = f"{dt[0:10]} {datetime.strptime(dt[11:19],'%H:%M:%S').time()}"
+                        # print(tweet_time_loops, " ", dt)
+                        # # print(tweet_time, type(tweet_time))
+                        # tweet_time = temp_time[0:10]
+                        # if dt == tweet_time:
                         
-                        for dt in tweet_time:
-                            if dt == tweets['time'] and counter != list_slot_wise[time_slot]:
-                                author_id = tweets['author_id']
-                                id = tweets['conversation_id']
-                                text = tweets['text']
-                                retweet_count = tweets['public_metrics']['retweet_count']
-                                reply_count = tweets['public_metrics']['reply_count']
-                                like_count = tweets['public_metrics']['like_count']
+                        if almost_matches(dt, tweet_time_loops) and counter != _range:
+                            author_id = tweets['author_id']
+                            id = tweets['conversation_id']
+                            text = tweets['text']
+                            retweet_count = tweets['public_metrics']['retweet_count']
+                            reply_count = tweets['public_metrics']['reply_count']
+                            like_count = tweets['public_metrics']['like_count']
 
-                                res = [author_id, id, text, like_count, reply_count, retweet_count]
-                                csvWriter.writerow(res)
-                                print("Done ", counter)
-                                counter += 1
+                            res = [sno, author_id, id, text, like_count, reply_count, retweet_count]
+                            csvWriter.writerow(res)
+                            print(f"Done {counter}")
+                            counter += 1
+                            sno += 1
 
+                        elif almost_matches_per_30_min(dt, tweet_time_loops) and counter != _range:
+                            author_id = tweets['author_id']
+                            id = tweets['conversation_id']
+                            text = tweets['text']
+                            retweet_count = tweets['public_metrics']['retweet_count']
+                            reply_count = tweets['public_metrics']['reply_count']
+                            like_count = tweets['public_metrics']['like_count']
 
+                            res = [sno, author_id, id, text, like_count, reply_count, retweet_count]
+                            csvWriter.writerow(res)
+                            print(f"Done {counter}")
+                            counter += 1 
+                            sno += 1                      
 
-                time_slot += 1            
-            j += 1
-        i += 1
-
-        csvFile_1.close()
-    return []
+            time_slot += 1            
+    
+    print("Total Tweets in Train Split: ",sum_of_range)
+    csvFile_1.close()
 
 def test_split():
     csvFile_1 = open(train_split_file, "r", newline="", encoding='utf-8')
     csvFile_2 = open(test_split_file, "a", newline="", encoding='utf-8')
-    csvreader = csv.reader(csvFile_1)
+    csvreader = pd.read_csv(csvFile_1)
     csvWriter = csv.writer(csvFile_2)
 
-
+    ids = csvreader['ID']
+    sno = 1
     for response in org_tweet['batches']:
         for tweets in response['data']:
             
             not_in_train = True
-            for row in csvreader:
-                if(row['conversation_id'] == tweets['conversation_id']):
+            for id in ids:
+                if(id == tweets['conversation_id']):
                     not_in_train = False
                     break
 
@@ -155,9 +224,10 @@ def test_split():
                 reply_count = tweets['public_metrics']['reply_count']
                 like_count = tweets['public_metrics']['like_count']
 
-                res = [author_id, id, text, like_count, reply_count, retweet_count]
+                res = [sno, author_id, id, text, like_count, reply_count, retweet_count]
                 csvWriter.writerow(res)
-        
+                print(f"Test_data : {sno}")
+                sno += 1
 
 if __name__ == "__main__":
 
@@ -166,11 +236,7 @@ if __name__ == "__main__":
 
     if (os.path.exists(test_split_file) and os.path.exists(train_split_file)):
        train_split()
-       #test_split()
-
-
-    #print(xls)
-
+       test_split()
 
 
 """
